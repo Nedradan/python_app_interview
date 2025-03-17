@@ -48,12 +48,12 @@ jobs:
     if: github.event.action == 'closed'
     runs-on: ubuntu-latest
     steps:
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
+    - name: Set up AWS credentials
+      uses: aws-actions/configure-aws-credentials@v3
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        role-to-assume: ${{ secrets.CICD_ROLE }}
         aws-region: ${{ secrets.AWS_REGION }}
+        audience: sts.amazonaws.com
 
     - name: Delete old PR images from ECR
       env:
