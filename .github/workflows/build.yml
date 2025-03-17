@@ -42,7 +42,7 @@ jobs:
 
     - name: Output image URI
       run: |
-        echo "Pushed Docker image: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}"
+        echo "Pushed Docker image: ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:pr-${{ github.event.pull_request.number }}-${{ github.sha }}"
 
   cleanup-on-pr-close:
     if: github.event.action == 'closed'
