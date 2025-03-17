@@ -57,7 +57,7 @@ jobs:
 
     - name: Delete old PR images from ECR
       env:
-        EECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+        ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
         ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
         IMAGE_TAG: pr-${{ github.event.pull_request.number }}-*
       run: |
