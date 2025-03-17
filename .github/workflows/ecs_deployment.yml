@@ -25,10 +25,11 @@ jobs:
           echo "ECR_REGISTRY is ${{ secrets.ECR_REGISTRY }}
 
       - name: Set up AWS OIDC credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v3
         with:
           role-to-assume: ${{ secrets.CICD_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
+          audience: sts.amazonaws.com
 
       - name: Log in to Amazon ECR
         run: |
