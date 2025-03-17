@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
 
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read  # This is required for actions/checkout
+
 jobs:
   build-and-push:
     if: github.event.action != 'closed'
@@ -16,20 +20,20 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
+    - name: Set up AWS credentials
+      uses: aws-actions/configure-aws-credentials@v3
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        role-to-assume: ${{ secrets.CICD_ROLE }}
         aws-region: ${{ secrets.AWS_REGION }}
+        audience: sts.amazonaws.com
 
     - name: Log in to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+      run: |
+        aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
 
-    - name: Build Docker image
+    - name: Build, tag, and push image to Amazon ECR
       env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
         ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
         IMAGE_TAG: pr-${{ github.event.pull_request.number }}-${{ github.sha }}
       run: |
@@ -38,7 +42,7 @@ jobs:
 
     - name: Output image URI
       run: |
-        echo "Pushed Docker image: ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}"
+        echo "Pushed Docker image: ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:pr-${{ github.event.pull_request.number }}-${{ github.sha }}"
 
   cleanup-on-pr-close:
     if: github.event.action == 'closed'
